@@ -1,0 +1,63 @@
+<div class="flex items-center justify-end mb-6">
+  <button
+    type="button"
+    (click)="exportarHorario()"
+    class="flex items-center gap-2 rounded-full bg-brand-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 transition"
+  >
+    DESCARGAR HORARIO
+  </button>
+</div>
+
+<div class="flex gap-3 mb-6 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+  @for (dia of dias; track dia.abbr) {
+    <button
+      type="button"
+      (click)="seleccionarDia(dia.abbr)"
+      class="flex flex-col items-center justify-center rounded-xl w-16 h-16 border transition shrink-0"
+      [class.bg-brand-900]="diaSeleccionado() === dia.abbr"
+      [class.text-white]="diaSeleccionado() === dia.abbr"
+      [class.border-brand-900]="diaSeleccionado() === dia.abbr"
+      [class.bg-white]="diaSeleccionado() !== dia.abbr"
+      [class.text-ink-700]="diaSeleccionado() !== dia.abbr"
+      [class.border-line]="diaSeleccionado() !== dia.abbr"
+    >
+      <span class="text-[11px] font-semibold">{{ dia.abbr }}</span>
+      <span class="text-base font-bold">{{ dia.fecha }}</span>
+    </button>
+  }
+</div>
+
+<div class="space-y-3">
+  @if (academico.horario.isLoading()) {
+    <p class="text-sm text-ink-500">Cargando horario...</p>
+  }
+
+  @if (academico.horario.error()) {
+    <p class="text-sm text-red-600">No se pudo cargar el horario. Verifica que el mock API esté corriendo.</p>
+  }
+
+  @for (clase of clasesDelDia(); track clase.horaInicio) {
+    <div class="flex items-center gap-5 rounded-xl border border-line bg-white px-5 py-4">
+      <div class="w-14 text-right shrink-0">
+        <p class="text-sm font-bold text-ink-900">{{ clase.horaInicio }}</p>
+        <p class="text-xs text-ink-400">{{ clase.horaFin }}</p>
+      </div>
+      <div class="w-px self-stretch bg-line"></div>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold uppercase tracking-wide" [class]="claseCategoriaClase(clase.categoria)">
+          {{ clase.categoria }}
+        </p>
+        <p class="text-sm font-bold text-ink-900">{{ clase.curso }}</p>
+        <p class="text-xs text-ink-500">{{ clase.profesor }}</p>
+      </div>
+      <span class="text-ink-300" aria-hidden="true">›</span>
+    </div>
+  } @empty {
+    @if (!academico.horario.isLoading()) {
+      <div class="rounded-xl border border-dashed border-line bg-white px-5 py-8 text-center">
+        <p class="text-sm font-medium text-ink-700">No tienes clases este día.</p>
+        <p class="text-xs text-ink-400 mt-1">Elige otro día de la semana para ver tu agenda.</p>
+      </div>
+    }
+  }
+</div>

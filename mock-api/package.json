@@ -1,0 +1,11 @@
+{
+  "name": "mock-api-academico",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "json-server": "0.17.4"
+  }
+}

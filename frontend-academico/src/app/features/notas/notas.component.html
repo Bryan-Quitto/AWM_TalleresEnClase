@@ -1,0 +1,73 @@
+<div class="rounded-2xl border border-line bg-white p-6 sm:p-8 mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 shadow-sm text-center sm:text-left">
+  <div class="w-24 h-24 rounded-full border-8 border-green-500 flex items-center justify-center font-bold text-xl text-ink-900 flex-col bg-brand-50 shrink-0">
+    <span class="text-xs font-semibold uppercase tracking-wider text-green-700">Apr.</span>
+    <span class="text-3xl text-green-700">{{ estadisticas().aprobadas }}</span>
+  </div>
+  <div class="flex-1">
+    <p class="text-sm text-ink-500 uppercase tracking-widest font-semibold mb-1">Resumen del Semestre</p>
+    <h2 class="text-2xl sm:text-3xl font-light text-ink-900 mb-3">Promedio General: <span class="font-bold">{{ academico.calificaciones.value().promedio }}</span></h2>
+    <div class="flex flex-wrap justify-center sm:justify-start gap-4 sm:gap-8 text-sm font-medium text-ink-700">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+        <span>Cursando: {{ estadisticas().total }} materias</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-green-500"></div>
+        <span>Aprobadas: {{ estadisticas().aprobadas }} materias</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="rounded-2xl border border-line bg-white shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <div class="min-w-[500px]">
+      <div class="grid grid-cols-[1fr_auto_100px] gap-6 px-6 sm:px-8 py-5 border-b border-line bg-brand-50/50">
+        <span class="text-sm font-bold tracking-widest text-brand-900 uppercase">Asignatura</span>
+        <span class="text-sm font-bold tracking-widest text-brand-900 uppercase text-center">Calificación</span>
+        <span class="text-sm font-bold tracking-widest text-brand-900 uppercase text-right">Estado</span>
+      </div>
+
+  @if (academico.calificaciones.isLoading()) {
+    <p class="px-8 py-8 text-sm text-ink-500 flex items-center gap-2">
+      <svg class="animate-spin h-4 w-4 text-brand-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+      Cargando calificaciones...
+    </p>
+  }
+
+  @if (academico.calificaciones.error()) {
+    <p class="px-8 py-8 text-sm text-red-600 bg-red-50">
+      No se pudieron cargar las calificaciones. Verifica que el mock API esté corriendo.
+    </p>
+  }
+
+  <div class="divide-y divide-brand-100">
+    @for (item of academico.calificaciones.value().calificaciones; track item.curso) {
+      <div class="grid grid-cols-[1fr_auto_100px] gap-6 items-center px-8 py-5 hover:bg-brand-50/30 transition-colors">
+        <div>
+          <p class="text-base font-semibold text-ink-900">{{ item.curso }}</p>
+        </div>
+        <div class="text-center">
+          <span class="font-bold text-ink-900 text-base">{{ item.nota }}</span>
+        </div>
+        <div class="text-right">
+          @if (item.nota >= 7) {
+            <span class="text-sm font-medium text-ink-900">
+              Aprobada
+            </span>
+          } @else {
+            <span class="text-sm font-medium text-ink-900">
+              Reprobada
+            </span>
+          }
+        </div>
+      </div>
+    } @empty {
+      @if (!academico.calificaciones.isLoading()) {
+        <p class="px-8 py-10 text-sm text-ink-500 text-center italic">Aún no tienes calificaciones registradas.</p>
+      }
+    }
+  </div>
+    </div>
+  </div>
+</div>

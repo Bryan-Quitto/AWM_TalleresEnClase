@@ -1,0 +1,32 @@
+@if (auth.usuario(); as usuario) {
+  <h2 class="text-lg font-bold text-ink-900 mb-1">Hola, {{ usuario.nombre.split(" ")[0] }} 👋</h2>
+  <p class="text-sm text-ink-500 mb-6">Este es el resumen de tu semana académica.</p>
+}
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+  <div class="rounded-xl border border-line bg-white px-5 py-4">
+    <p class="text-[11px] font-semibold tracking-wider text-ink-300 uppercase mb-1">Promedio general</p>
+    <p class="text-2xl font-bold text-brand-900">{{ academico.calificaciones.value().promedio }}/10</p>
+  </div>
+  <div class="rounded-xl border border-line bg-white px-5 py-4">
+    <p class="text-[11px] font-semibold tracking-wider text-ink-300 uppercase mb-1">Cursos activos</p>
+    <p class="text-2xl font-bold text-ink-900">{{ totalCursos() }}</p>
+  </div>
+  <div class="rounded-xl border border-line bg-white px-5 py-4">
+    <p class="text-[11px] font-semibold tracking-wider text-ink-300 uppercase mb-1">Próxima clase</p>
+    @if (proximaClase(); as clase) {
+      <p class="text-sm font-bold text-ink-900">{{ clase.curso }}</p>
+      <p class="text-xs text-ink-500">{{ clase.dia }} · {{ clase.horaInicio }}</p>
+    } @else {
+      <p class="text-sm text-ink-500">Sin clases próximas</p>
+    }
+  </div>
+</div>
+
+<div class="rounded-xl border border-dashed border-line bg-white px-6 py-8 text-center">
+  <p class="text-sm text-ink-500">
+    Usa el menú de la izquierda para ver el detalle de tus
+    <span class="font-semibold text-ink-700">notas</span> o tu
+    <span class="font-semibold text-ink-700">horario</span>.
+  </p>
+</div>

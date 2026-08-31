@@ -1,0 +1,110 @@
+<div class="min-h-screen flex bg-brand-50 overflow-hidden">
+  <!-- Overlay móvil -->
+  @if (menuAbierto()) {
+    <div 
+      class="fixed inset-0 bg-ink-900/50 z-40 lg:hidden"
+      (click)="cerrarMenu()"
+    ></div>
+  }
+
+  <!-- Sidebar -->
+  <aside 
+    class="w-64 bg-brand-900 border-r border-brand-800 flex flex-col fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 lg:relative lg:translate-x-0"
+    [class.-translate-x-full]="!menuAbierto()"
+  >
+    <div class="flex items-center justify-between text-white font-bold text-2xl px-6 py-6 border-b border-brand-800 mb-4">
+      <span>EduPortal</span>
+      <!-- Botón cerrar (móvil) -->
+      <button (click)="cerrarMenu()" class="lg:hidden text-brand-300 hover:text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    @if (auth.usuario(); as usuario) {
+      <div class="flex items-center gap-3 px-6 mb-6">
+        <div class="w-9 h-9 rounded-full bg-white text-brand-900 flex items-center justify-center text-xs font-bold shrink-0">
+          {{ usuario.iniciales }}
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-white leading-tight truncate">{{ usuario.nombre }}</p>
+          <p class="text-xs text-brand-100 leading-tight capitalize truncate">{{ usuario.rol }}</p>
+        </div>
+      </div>
+    }
+
+    <nav class="flex flex-col mt-2">
+      <a
+        routerLink="/resumen"
+        routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
+        [routerLinkActiveOptions]="{exact: true}"
+        (click)="cerrarMenu()"
+        class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        Inicio
+      </a>
+      <a
+        routerLink="/notas"
+        routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
+        (click)="cerrarMenu()"
+        class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        Notas
+      </a>
+      <a
+        routerLink="/horario"
+        routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
+        (click)="cerrarMenu()"
+        class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        Horarios
+      </a>
+    </nav>
+
+    <!-- Boton Cerrar Sesion -->
+    <div class="mt-auto px-6 pb-6">
+      <button
+        type="button"
+        (click)="onLogout()"
+        aria-label="Cerrar sesión"
+        class="flex items-center gap-3 w-full px-4 py-2 rounded-lg text-white hover:bg-brand-800 transition-colors text-sm font-medium"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Contenido -->
+  <div class="flex-1 min-w-0 flex flex-col w-full lg:w-auto h-screen overflow-y-auto">
+    <header class="flex items-center justify-between px-4 sm:px-8 py-6 bg-brand-50 shrink-0">
+      <div class="flex items-center gap-4">
+        <!-- Botón Hamburguesa -->
+        <button (click)="toggleMenu()" class="lg:hidden p-2 -ml-2 text-brand-900 hover:bg-brand-100 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M3 6h18M3 18h18" />
+          </svg>
+        </button>
+        <h1 class="text-2xl sm:text-3xl font-normal text-brand-900 tracking-tight">{{ header().title }}</h1>
+      </div>
+      @if (header().title === 'Horario' && auth.usuario(); as usuario) {
+        <div class="hidden lg:block text-right">
+          <p class="text-xl text-ink-900 font-normal">
+            ESTUDIANTE: {{ usuario.nombre }} | Software | Ciclo 2026-II
+          </p>
+        </div>
+      }
+    </header>
+
+    <main class="px-4 sm:px-8 pb-8 flex-1">
+      <router-outlet />
+    </main>
+  </div>
+</div>

@@ -1,0 +1,37 @@
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "nombre": "Sofía Martinez",
+      "iniciales": "SM",
+      "correo": "estudiante@uta.edu.ec",
+      "password": "campus2026",
+      "rol": "estudiante",
+      "periodo": "Periodo 2026 · Portal estudiantil"
+    }
+  ],
+  "cursos": [
+    { "id": 1, "nombre": "Base de Datos", "profesor": "Ing. Matias Morales", "categoria": "APE" },
+    { "id": 2, "nombre": "Computación Visual", "profesor": "Ing. Carlos Nuñez", "categoria": "Laboratorio" },
+    { "id": 3, "nombre": "Interacción Humano Computador", "profesor": "Ing. Duglas Bastidas", "categoria": "APE" },
+    { "id": 4, "nombre": "Programación Orientada a Objetos", "profesor": "Ing. Julio Martinez", "categoria": "Laboratorio" },
+    { "id": 5, "nombre": "Sistemas Operativos", "profesor": "Ing. Ana Silva", "categoria": "Teoría" },
+    { "id": 6, "nombre": "Redes de Computadoras", "profesor": "Ing. Luis Gomez", "categoria": "Laboratorio" }
+  ],
+  "calificaciones": [
+    { "id": 1, "estudianteId": 1, "cursoId": 1, "nota": 8.5 },
+    { "id": 2, "estudianteId": 1, "cursoId": 2, "nota": 8.5 },
+    { "id": 3, "estudianteId": 1, "cursoId": 3, "nota": 8.5 },
+    { "id": 4, "estudianteId": 1, "cursoId": 4, "nota": 8.5 },
+    { "id": 5, "estudianteId": 1, "cursoId": 5, "nota": 6.5 },
+    { "id": 6, "estudianteId": 1, "cursoId": 6, "nota": 9.2 }
+  ],
+  "horario": [
+    { "id": 1, "estudianteId": 1, "cursoId": 1, "dia": "MAR", "fecha": 25, "horaInicio": "08:00", "horaFin": "10:00" },
+    { "id": 2, "estudianteId": 1, "cursoId": 2, "dia": "MAR", "fecha": 25, "horaInicio": "10:00", "horaFin": "12:00" },
+    { "id": 3, "estudianteId": 1, "cursoId": 3, "dia": "MAR", "fecha": 25, "horaInicio": "14:00", "horaFin": "16:00" },
+    { "id": 4, "estudianteId": 1, "cursoId": 4, "dia": "MAR", "fecha": 25, "horaInicio": "16:00", "horaFin": "18:00" },
+    { "id": 5, "estudianteId": 1, "cursoId": 5, "dia": "MIE", "fecha": 26, "horaInicio": "08:00", "horaFin": "11:00" },
+    { "id": 6, "estudianteId": 1, "cursoId": 6, "dia": "JUE", "fecha": 27, "horaInicio": "10:00", "horaFin": "13:00" }
+  ]
+}
