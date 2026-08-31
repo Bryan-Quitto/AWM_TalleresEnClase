@@ -13,6 +13,7 @@ export class NotasComponent {
     const notas = this.academico.calificaciones.value()?.calificaciones || [];
     const total = notas.length;
     const aprobadas = notas.filter((n: any) => n.nota >= 7).length;
-    return { total, aprobadas };
+    const reprobadas = notas.filter((n: any) => n.nota < 7).length;
+    return { total, aprobadas, reprobadas };
   });
 }
