@@ -22,12 +22,24 @@ export class LayoutComponent {
   // Estado del menú en móviles
   menuAbierto = signal(false);
 
+  // Estado de los acordeones del sidebar (ambos abiertos por defecto).
+  readonly seccionMiEspacioAbierta = signal(true);
+  readonly seccionAdminAbierta = signal(true);
+
   toggleMenu() {
     this.menuAbierto.update(v => !v);
   }
 
   cerrarMenu() {
     this.menuAbierto.set(false);
+  }
+
+  toggleSeccionMiEspacio(): void {
+    this.seccionMiEspacioAbierta.update(v => !v);
+  }
+
+  toggleSeccionAdmin(): void {
+    this.seccionAdminAbierta.update(v => !v);
   }
 
   /**

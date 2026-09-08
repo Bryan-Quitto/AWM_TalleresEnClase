@@ -1,9 +1,20 @@
-<div class="flex items-center justify-end mb-6">
+<div class="flex items-center justify-between mb-1">
+  <p class="text-[11px] font-semibold tracking-wider text-ink-300 uppercase">Semana del 24 al 28 de agosto</p>
+</div>
+
+<div class="flex items-center justify-between mb-5">
+  <h2 class="text-lg font-bold text-ink-900">Tus clases de la semana</h2>
+
   <button
     type="button"
     (click)="exportarHorario()"
-    class="flex items-center gap-2 rounded-full bg-brand-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 transition"
+    class="flex items-center gap-2 rounded-full border border-brand-700 px-4 py-2 text-sm font-semibold text-brand-800 hover:bg-brand-100"
   >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.8" class="w-4 h-4">
+      <rect x="4" y="5.5" width="16" height="14" rx="2" />
+      <path stroke-linecap="round" d="M8 3.5v3.5M16 3.5v3.5M4 10h16M12 13v4m-2-2 2 2 2-2" />
+    </svg>
     DESCARGAR HORARIO
   </button>
 </div>
@@ -12,7 +23,7 @@
   @for (dia of dias; track dia.abbr) {
     <button
       type="button"
-      (click)="seleccionarDia(dia.abbr)"
+      (click)="diaSeleccionado.set(dia.abbr)"
       class="flex flex-col items-center justify-center rounded-xl w-16 h-16 border transition shrink-0"
       [class.bg-brand-900]="diaSeleccionado() === dia.abbr"
       [class.text-white]="diaSeleccionado() === dia.abbr"

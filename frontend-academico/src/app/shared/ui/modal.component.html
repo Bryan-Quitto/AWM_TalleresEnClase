@@ -1,0 +1,28 @@
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/40 px-4"
+  (click)="onBackdropClick()"
+>
+  <div
+    class="w-full max-w-lg rounded-xl bg-white shadow-xl"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between border-b border-line px-6 py-4">
+      <h3 class="text-base font-bold text-ink-900">{{ titulo() }}</h3>
+      <button
+        type="button"
+        (click)="cerrar.emit()"
+        aria-label="Cerrar"
+        class="text-ink-300 hover:text-ink-700"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.8" class="w-5 h-5">
+          <path stroke-linecap="round" d="M6 6l12 12M18 6 6 18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="px-6 py-5">
+      <ng-content />
+    </div>
+  </div>
+</div>

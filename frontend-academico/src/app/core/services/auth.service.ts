@@ -14,6 +14,14 @@ export class AuthService {
   readonly usuario = this.usuarioSignal.asReadonly();
   readonly isAuthenticated = computed(() => this.usuarioSignal() !== null);
 
+  /** true para docente o admin — controla la visibilidad de los CRUD. */
+  readonly puedeGestionar = computed(() => {
+    const rol = this.usuarioSignal()?.rol;
+    return rol === "docente" || rol === "admin";
+  });
+
+  readonly esAdmin = computed(() => this.usuarioSignal()?.rol === "admin");
+
   constructor(private http: HttpClient) {}
 
   login(correo: string, password: string): Observable<LoginResponse> {

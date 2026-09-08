@@ -1,14 +1,14 @@
 <div class="min-h-screen flex bg-brand-50 overflow-hidden">
   <!-- Overlay móvil -->
   @if (menuAbierto()) {
-    <div 
+    <div
       class="fixed inset-0 bg-ink-900/50 z-40 lg:hidden"
       (click)="cerrarMenu()"
     ></div>
   }
 
   <!-- Sidebar -->
-  <aside 
+  <aside
     class="w-64 bg-brand-900 border-r border-brand-800 flex flex-col fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 lg:relative lg:translate-x-0"
     [class.-translate-x-full]="!menuAbierto()"
   >
@@ -34,36 +34,128 @@
       </div>
     }
 
-    <nav class="flex flex-col mt-2">
-      <a
-        routerLink="/resumen"
-        routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
-        [routerLinkActiveOptions]="{exact: true}"
-        (click)="cerrarMenu()"
-        class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+    <!-- Sección Mi espacio (acordeón) -->
+    <div class="px-4 pt-4 pb-3">
+      <button
+        type="button"
+        (click)="toggleSeccionMiEspacio()"
+        [attr.aria-expanded]="seccionMiEspacioAbierta()"
+        aria-controls="seccion-mi-espacio"
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-white/10 border border-white/15 hover:bg-white/15 transition-colors"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-        Inicio
-      </a>
-      <a
-        routerLink="/notas"
-        routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
-        (click)="cerrarMenu()"
-        class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-        Notas
-      </a>
-      <a
-        routerLink="/horario"
-        routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
-        (click)="cerrarMenu()"
-        class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        Horarios
-      </a>
-    </nav>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" class="w-4 h-4 shrink-0 text-white">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+        </svg>
+        <span class="text-xs font-bold tracking-widest text-white uppercase flex-1 text-left">Mi espacio</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" class="w-4 h-4 shrink-0 text-white transition-transform duration-200"
+          [class.rotate-180]="seccionMiEspacioAbierta()">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+    </div>
+
+    @if (seccionMiEspacioAbierta()) {
+      <nav id="seccion-mi-espacio" class="flex flex-col">
+        <a
+          routerLink="/resumen"
+          routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
+          [routerLinkActiveOptions]="{exact: true}"
+          (click)="cerrarMenu()"
+          class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          Inicio
+        </a>
+        <a
+          routerLink="/notas"
+          routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
+          (click)="cerrarMenu()"
+          class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          Notas
+        </a>
+        <a
+          routerLink="/horario"
+          routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
+          (click)="cerrarMenu()"
+          class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          Horarios
+        </a>
+      </nav>
+    }
+
+    <!-- Sección Administración (acordeón, solo docente/admin) -->
+    @if (auth.puedeGestionar()) {
+      <div class="px-4 pt-6 pb-3">
+        <button
+          type="button"
+          (click)="toggleSeccionAdmin()"
+          [attr.aria-expanded]="seccionAdminAbierta()"
+          aria-controls="seccion-admin"
+          class="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-white/10 border border-white/15 hover:bg-white/15 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" class="w-4 h-4 shrink-0 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+          </svg>
+          <span class="text-xs font-bold tracking-widest text-white uppercase flex-1 text-left">Administración</span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" class="w-4 h-4 shrink-0 text-white transition-transform duration-200"
+            [class.rotate-180]="seccionAdminAbierta()">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          </svg>
+        </button>
+      </div>
+      @if (seccionAdminAbierta()) {
+        <nav id="seccion-admin" class="flex flex-col">
+          <a
+            routerLink="/admin/notas"
+            routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
+            (click)="cerrarMenu()"
+            class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Calificaciones
+          </a>
+          <a
+            routerLink="/admin/horarios"
+            routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
+            (click)="cerrarMenu()"
+            class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Horarios
+          </a>
+          <a
+            routerLink="/admin/cursos"
+            routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
+            (click)="cerrarMenu()"
+            class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6.5h11a3 3 0 0 1 3 3V19H7a3 3 0 0 1-3-3V6.5Z"></path><path stroke-linecap="round" d="M4 6.5a3 3 0 0 1 3-3h2v6"></path></svg>
+            Cursos
+          </a>
+          @if (auth.esAdmin()) {
+            <a
+              routerLink="/admin/usuarios"
+              routerLinkActive="bg-white hover:bg-white !text-brand-900 border-l-4 border-brand-600"
+              (click)="cerrarMenu()"
+              class="flex items-center gap-3 px-6 py-3 text-base font-medium text-white hover:bg-brand-800 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 shrink-0"><circle cx="9" cy="8" r="3"></circle><path stroke-linecap="round" d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5M16 8.5c1.5.2 2.5 1.3 2.5 2.8M15.5 14c2 .3 4 1.7 4.5 4"></path></svg>
+              Usuarios
+            </a>
+          }
+        </nav>
+      }
+    }
 
     <!-- Boton Cerrar Sesion -->
     <div class="mt-auto px-6 pb-6">
@@ -94,7 +186,7 @@
         </button>
         <h1 class="text-2xl sm:text-3xl font-normal text-brand-900 tracking-tight">{{ header().title }}</h1>
       </div>
-      @if (header().title === 'Horario' && auth.usuario(); as usuario) {
+      @if (header().title === 'Mi Horario' && auth.usuario(); as usuario) {
         <div class="hidden lg:block text-right">
           <p class="text-xl text-ink-900 font-normal">
             ESTUDIANTE: {{ usuario.nombre }} | Software | Ciclo 2026-II

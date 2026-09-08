@@ -10,10 +10,10 @@ export class NotasComponent {
   protected readonly academico = inject(AcademicoService);
 
   protected readonly estadisticas = computed(() => {
-    const notas = this.academico.calificaciones.value()?.calificaciones || [];
+    const notas = this.academico.calificaciones.value()?.calificaciones ?? [];
     const total = notas.length;
-    const aprobadas = notas.filter((n: any) => n.nota >= 7).length;
-    const reprobadas = notas.filter((n: any) => n.nota < 7).length;
+    const aprobadas = notas.filter((n) => n.nota >= 7).length;
+    const reprobadas = notas.filter((n) => n.nota < 7).length;
     return { total, aprobadas, reprobadas };
   });
 }

@@ -28,10 +28,6 @@ export class HorarioComponent {
     (this.academico.horario.value().horario ?? []).filter((h) => h.dia === this.diaSeleccionado())
   );
 
-  seleccionarDia(abbr: string): void {
-    this.diaSeleccionado.set(abbr);
-  }
-
   claseCategoriaClase(categoria: string): string {
     return categoria === "APE" ? "text-accent-600" : "text-brand-700";
   }
