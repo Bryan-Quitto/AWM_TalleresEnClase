@@ -12,7 +12,7 @@ import { CursoAdminService } from "../../../core/services/curso-admin.service";
 import { UsuarioAdminService } from "../../../core/services/usuario-admin.service";
 import { ModalComponent } from "../../../shared/ui/modal.component";
 import { ConfirmModalComponent } from "../../../shared/ui/confirm-modal.component";
-import { Dia, HorarioRecord } from "../../../core/models/models";
+import { Dia, HorarioRecord, HorarioFormValue } from "../../../core/models/models";
 
 /**
  * Validador de grupo: horaFin debe ser estrictamente mayor que horaInicio.
@@ -26,15 +26,18 @@ function rangoHorarioValido(group: AbstractControl): ValidationErrors | null {
   return fin > inicio ? null : { rangoHorario: true };
 }
 
-/** Validador de fecha: debe caer dentro del mes en curso (entre 1 y el último día del mes). */
+/** Validador de fecha: debe caer dentro del mes en curso y ser un día laborable (Lun–Vie). */
 function fechaDelMesValido(control: AbstractControl): ValidationErrors | null {
-  const raw = control.value as number | null | undefined;
+  const raw = control.value as Date | null | undefined;
   if (raw === null || raw === undefined) return null;
-  const v = Number(raw);
-  if (!Number.isFinite(v) || v < 1) return { fechaInvalida: true };
+  if (!(raw instanceof Date) || Number.isNaN(raw.getTime())) return { fechaInvalida: true };
   const hoy = new Date();
-  const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
-  return v <= ultimoDia ? null : { fechaInvalida: true };
+  const mismoMes =
+    raw.getFullYear() === hoy.getFullYear() && raw.getMonth() === hoy.getMonth();
+  if (!mismoMes) return { fechaInvalida: true };
+  const dow = raw.getDay();
+  if (dow === 0 || dow === 6) return { fechaFinDeSemana: true };
+  return null;
 }
 
 @Component({
@@ -54,7 +57,8 @@ export class HorarioAdminComponent {
   protected readonly guardando = signal(false);
   protected readonly errorMsg = signal("");
 
-  protected readonly diasDisponibles: Dia[] = ["LUN", "MAR", "MIE", "JUE", "VIE"];
+  /** Orden estable de filas: por estudiante → día (LUN→VIE) → hora de inicio. */
+  private readonly ORDEN_DIAS: Record<Dia, number> = { LUN: 0, MAR: 1, MIE: 2, JUE: 3, VIE: 4 };
 
   /** Estado del modal de confirmación de eliminación. */
   protected readonly pendienteEliminar = signal<HorarioRecord | null>(null);
@@ -63,11 +67,19 @@ export class HorarioAdminComponent {
   protected readonly filas = computed(() => {
     const cursos = this.cursoAdmin.cursos.value() ?? [];
     const estudiantes = this.usuarioAdmin.estudiantes() ?? [];
-    return (this.horarioAdmin.horario.value() ?? []).map((h) => ({
+    const lista = (this.horarioAdmin.horario.value() ?? []).map((h) => ({
       registro: h,
       estudiante: estudiantes.find((e) => e.id === h.estudianteId)?.nombre ?? `#${h.estudianteId}`,
       curso: cursos.find((c) => c.id === h.cursoId)?.nombre ?? `#${h.cursoId}`,
     }));
+    return [...lista].sort((a, b) => {
+      const ea = estudiantes.find((e) => e.id === a.registro.estudianteId)?.nombre ?? "";
+      const eb = estudiantes.find((e) => e.id === b.registro.estudianteId)?.nombre ?? "";
+      if (ea !== eb) return ea.localeCompare(eb);
+      const dia = this.ORDEN_DIAS[a.registro.dia] - this.ORDEN_DIAS[b.registro.dia];
+      if (dia !== 0) return dia;
+      return a.registro.horaInicio.localeCompare(b.registro.horaInicio);
+    });
   });
 
   protected readonly form = this.fb.nonNullable.group(
@@ -75,7 +87,7 @@ export class HorarioAdminComponent {
       estudianteId: [0, [Validators.required, Validators.min(1)]],
       cursoId: [0, [Validators.required, Validators.min(1)]],
       dia: ["LUN" as Dia, Validators.required],
-      fecha: [24, [Validators.required, fechaDelMesValido]],
+      fecha: [null as Date | null, [Validators.required, fechaDelMesValido]],
       horaInicio: ["08:00", Validators.required],
       horaFin: ["10:00", Validators.required],
     },
@@ -85,14 +97,33 @@ export class HorarioAdminComponent {
   abrirCrear(): void {
     this.editando.set(null);
     this.errorMsg.set("");
-    this.form.reset({ estudianteId: 0, cursoId: 0, dia: "LUN", fecha: 24, horaInicio: "08:00", horaFin: "10:00" });
+    // Por defecto: próximo día laborable en horario laboral.
+    const hoy = new Date();
+    const manana = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 1);
+    this.form.reset({
+      estudianteId: 0,
+      cursoId: 0,
+      dia: "LUN",
+      fecha: manana,
+      horaInicio: "08:00",
+      horaFin: "10:00",
+    });
     this.modalAbierto.set(true);
   }
 
   abrirEditar(registro: HorarioRecord): void {
     this.editando.set(registro);
     this.errorMsg.set("");
-    this.form.reset({ ...registro });
+    const hoy = new Date();
+    const fecha = new Date(hoy.getFullYear(), hoy.getMonth(), registro.fecha);
+    this.form.reset({
+      estudianteId: registro.estudianteId,
+      cursoId: registro.cursoId,
+      dia: registro.dia,
+      fecha,
+      horaInicio: registro.horaInicio,
+      horaFin: registro.horaFin,
+    });
     this.modalAbierto.set(true);
   }
 
@@ -106,9 +137,34 @@ export class HorarioAdminComponent {
       return;
     }
 
+    const raw = this.form.getRawValue();
+    const fecha: Date = raw.fecha as Date;
+    const dia = raw.dia as Dia;
+
+    // Validación de choque: mismo estudiante + mismo día + solapamiento de rango horario.
+    const editandoId = this.editando()?.id;
+    const chocan = (this.horarioAdmin.horario.value() ?? []).some((h) => {
+      if (h.id === editandoId) return false;
+      if (h.estudianteId !== raw.estudianteId) return false;
+      if (h.dia !== dia) return false;
+      return !(raw.horaFin <= h.horaInicio || raw.horaInicio >= h.horaFin);
+    });
+    if (chocan) {
+      this.errorMsg.set("El estudiante ya tiene una clase que se solapa en ese horario.");
+      return;
+    }
+
     this.guardando.set(true);
     this.errorMsg.set("");
-    const valor = this.form.getRawValue();
+
+    const valor: HorarioFormValue = {
+      estudianteId: raw.estudianteId,
+      cursoId: raw.cursoId,
+      dia,
+      fecha: fecha.getDate(),
+      horaInicio: raw.horaInicio,
+      horaFin: raw.horaFin,
+    };
 
     try {
       const editando = this.editando();

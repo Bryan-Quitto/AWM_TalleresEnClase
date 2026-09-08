@@ -1,5 +1,7 @@
 <div class="flex items-center justify-between mb-1">
-  <p class="text-[11px] font-semibold tracking-wider text-ink-300 uppercase">Semana del 24 al 28 de agosto</p>
+  <p class="text-[11px] font-semibold tracking-wider text-ink-300 uppercase">
+    Semana del {{ rangoSemana.desde }} al {{ rangoSemana.hasta }}
+  </p>
 </div>
 
 <div class="flex items-center justify-between mb-5">
@@ -66,7 +68,9 @@
   } @empty {
     @if (!academico.horario.isLoading()) {
       <div class="rounded-xl border border-dashed border-line bg-white px-5 py-8 text-center">
-        <p class="text-sm font-medium text-ink-700">No tienes clases este día.</p>
+        <p class="text-sm font-medium text-ink-700">
+          No tienes clases el {{ nombreLargoDelDia(diaSeleccionado()) }}.
+        </p>
         <p class="text-xs text-ink-400 mt-1">Elige otro día de la semana para ver tu agenda.</p>
       </div>
     }

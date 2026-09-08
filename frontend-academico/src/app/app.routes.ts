@@ -25,7 +25,7 @@ export const routes: Routes = [
       {
         path: "horario",
         loadComponent: () => import("./features/horario/horario.component").then((m) => m.HorarioComponent),
-        data: { breadcrumb: "Horario", title: "Mi Horario" },
+        data: { breadcrumb: "Mi espacio / Horario", title: "Horario" },
       },
       {
         path: "admin/cursos",

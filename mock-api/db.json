@@ -154,13 +154,13 @@
       "horaFin": "16:00"
     },
     {
-      "id": 4,
       "estudianteId": 1,
       "cursoId": 4,
       "dia": "MAR",
       "fecha": 25,
       "horaInicio": "16:00",
-      "horaFin": "18:00"
+      "horaFin": "18:00",
+      "id": 4
     },
     {
       "id": 5,

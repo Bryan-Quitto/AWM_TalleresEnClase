@@ -47,7 +47,7 @@
         <button type="button" (click)="abrirEditar(curso)" class="text-xs font-semibold text-brand-700 hover:text-brand-900">
           Editar
         </button>
-        <button type="button" (click)="pedirEliminar(curso)" class="text-xs font-semibold text-brand-700 hover:text-brand-900">
+        <button type="button" (click)="pedirEliminar(curso)" class="text-xs font-semibold text-red-600 hover:text-red-800">
           Eliminar
         </button>
       </div>
@@ -121,7 +121,12 @@
   <app-confirm-modal
     variant="danger"
     titulo="Eliminar curso"
-    [mensaje]="'¿Eliminar &quot;' + curso.nombre + '&quot;? Las calificaciones y clases de horario asociadas a este curso quedarían huérfanas.'"
+    [mensaje]="
+      '¿Eliminar «' + curso.nombre + '»?' +
+      (contarDependencias(curso).calificaciones + contarDependencias(curso).horarios > 0
+        ? ' Hay ' + contarDependencias(curso).calificaciones + ' calificación(es) y ' + contarDependencias(curso).horarios + ' clase(s) asociadas que quedarán huérfanas.'
+        : '')
+    "
     textoConfirmar="Eliminar"
     textoCancelar="Cancelar"
     (confirmar)="confirmarEliminar()"

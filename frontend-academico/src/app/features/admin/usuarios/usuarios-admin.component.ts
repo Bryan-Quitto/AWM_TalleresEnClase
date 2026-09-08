@@ -5,7 +5,7 @@ import { UsuarioAdminService } from "../../../core/services/usuario-admin.servic
 import { AuthService } from "../../../core/services/auth.service";
 import { ModalComponent } from "../../../shared/ui/modal.component";
 import { ConfirmModalComponent } from "../../../shared/ui/confirm-modal.component";
-import { Rol, UsuarioRecord } from "../../../core/models/models";
+import { Rol, UsuarioRecord, UsuarioFormValue } from "../../../core/models/models";
 
 @Component({
   selector: "app-usuarios-admin",
@@ -31,6 +31,17 @@ export class UsuariosAdminComponent {
 
   /** Modal informativo (reemplaza al antiguo `alert`). */
   protected readonly aviso = signal<string | null>(null);
+
+  /** Doble confirmación al guardar docentes/admin. */
+  protected readonly pendienteGuardarPotente = signal<{ valor: UsuarioFormValue; editando: boolean } | null>(null);
+  protected readonly guardandoPotente = signal(false);
+
+  /** Lista cerrada de periodos para evitar texto libre. */
+  protected readonly periodosDisponibles: string[] = [
+    "Periodo 2026 · Portal estudiantil",
+    "Periodo 2026 · Portal docente",
+    "Periodo 2026 · Portal administrativo",
+  ];
 
   protected readonly form = this.fb.nonNullable.group({
     nombre: ["", [Validators.required, Validators.minLength(3)]],
@@ -81,9 +92,38 @@ export class UsuariosAdminComponent {
       return;
     }
 
+    const valor = this.form.getRawValue();
+
+    // Doble confirmación si el rol es docente o admin (operación sensible).
+    if (valor.rol !== "estudiante") {
+      this.pendienteGuardarPotente.set({ valor, editando: !!this.editando() });
+      this.modalAbierto.set(false);
+      return;
+    }
+
+    await this.ejecutarGuardar(valor);
+  }
+
+  cancelarGuardarPotente(): void {
+    if (this.guardandoPotente()) return;
+    this.pendienteGuardarPotente.set(null);
+  }
+
+  async confirmarGuardarPotente(): Promise<void> {
+    const ctx = this.pendienteGuardarPotente();
+    if (!ctx) return;
+    this.guardandoPotente.set(true);
+    try {
+      await this.ejecutarGuardar(ctx.valor);
+      this.pendienteGuardarPotente.set(null);
+    } finally {
+      this.guardandoPotente.set(false);
+    }
+  }
+
+  private async ejecutarGuardar(valor: UsuarioFormValue): Promise<void> {
     this.guardando.set(true);
     this.errorMsg.set("");
-    const valor = this.form.getRawValue();
 
     try {
       const editando = this.editando();

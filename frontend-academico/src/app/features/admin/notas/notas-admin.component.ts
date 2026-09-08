@@ -74,9 +74,20 @@ export class NotasAdminComponent {
       return;
     }
 
+    const valor = this.form.getRawValue();
+
+    // No permitir duplicados (mismo estudiante + mismo curso).
+    const editandoId = this.editando()?.id;
+    const existeDuplicado = (this.calificacionAdmin.calificaciones.value() ?? []).some(
+      (c) => c.id !== editandoId && c.estudianteId === valor.estudianteId && c.cursoId === valor.cursoId
+    );
+    if (existeDuplicado) {
+      this.errorMsg.set("Ya existe una calificación para ese estudiante y curso. Edítala en lugar de crear otra.");
+      return;
+    }
+
     this.guardando.set(true);
     this.errorMsg.set("");
-    const valor = this.form.getRawValue();
 
     try {
       const editando = this.editando();
