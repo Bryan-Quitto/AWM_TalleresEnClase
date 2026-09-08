@@ -1,4 +1,5 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, signal, DestroyRef } from "@angular/core";
+import { takeUntilDestroyed, toSignal } from "@angular/core/rxjs-interop";
 import { CommonModule } from "@angular/common";
 import {
   AbstractControl,
@@ -14,6 +15,18 @@ import { ModalComponent } from "../../../shared/ui/modal.component";
 import { ConfirmModalComponent } from "../../../shared/ui/confirm-modal.component";
 import { Dia, HorarioRecord, HorarioFormValue } from "../../../core/models/models";
 
+/** Devuelve la abreviatura del día de la semana (LUN..VIE) a partir de un string YYYY-MM-DD. */
+function abbrDeFechaString(fechaStr: string): Dia | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fechaStr);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const dow = new Date(y, mo - 1, d).getDay();
+  const map: Dia[] = ["LUN", "MAR", "MIE", "JUE", "VIE"];
+  return dow >= 1 && dow <= 5 ? map[dow - 1] : null;
+}
+
 /**
  * Validador de grupo: horaFin debe ser estrictamente mayor que horaInicio.
  * Si falla, deja el error `rangoHorario` en el propio FormGroup (no en un control específico)
@@ -26,16 +39,23 @@ function rangoHorarioValido(group: AbstractControl): ValidationErrors | null {
   return fin > inicio ? null : { rangoHorario: true };
 }
 
-/** Validador de fecha: debe caer dentro del mes en curso y ser un día laborable (Lun–Vie). */
+/**
+ * Validador de fecha: la recibimos como string `YYYY-MM-DD` (lo que emite
+ * `<input type="date">`). Sólo exigimos que sea un día laborable (Lun–Vie).
+ *
+ * Importante: NO usamos `new Date(...)` aquí porque introduce ambigüedad
+ * de zona horaria — `new Date('2026-09-09')` se interpreta como UTC y,
+ * en navegadores al oeste de Greenwich, se "corre" un día, haciendo que
+ * una fecha válida falle la validación. Trabajamos directamente con el
+ * string para evitar ese problema.
+ */
 function fechaDelMesValido(control: AbstractControl): ValidationErrors | null {
-  const raw = control.value as Date | null | undefined;
-  if (raw === null || raw === undefined) return null;
-  if (!(raw instanceof Date) || Number.isNaN(raw.getTime())) return { fechaInvalida: true };
-  const hoy = new Date();
-  const mismoMes =
-    raw.getFullYear() === hoy.getFullYear() && raw.getMonth() === hoy.getMonth();
-  if (!mismoMes) return { fechaInvalida: true };
-  const dow = raw.getDay();
+  const raw = control.value as string | null | undefined;
+  if (!raw) return null;
+  // Aceptamos sólo el formato exacto que produce <input type="date">.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return { fechaInvalida: true };
+  const [y, m, d] = raw.split("-").map(Number);
+  const dow = new Date(y, m - 1, d).getDay(); // armado en local, sólo para getDay()
   if (dow === 0 || dow === 6) return { fechaFinDeSemana: true };
   return null;
 }
@@ -51,6 +71,7 @@ export class HorarioAdminComponent {
   protected readonly cursoAdmin = inject(CursoAdminService);
   protected readonly usuarioAdmin = inject(UsuarioAdminService);
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly modalAbierto = signal(false);
   protected readonly editando = signal<HorarioRecord | null>(null);
@@ -86,25 +107,59 @@ export class HorarioAdminComponent {
     {
       estudianteId: [0, [Validators.required, Validators.min(1)]],
       cursoId: [0, [Validators.required, Validators.min(1)]],
-      dia: ["LUN" as Dia, Validators.required],
-      fecha: [null as Date | null, [Validators.required, fechaDelMesValido]],
+      /** Fecha como string `YYYY-MM-DD` (formato de `<input type="date">`). */
+      fecha: ["", [Validators.required, fechaDelMesValido]],
       horaInicio: ["08:00", Validators.required],
       horaFin: ["10:00", Validators.required],
     },
     { validators: rangoHorarioValido }
   );
 
+  /** Stream de cambios de la fecha → abreviatura del día. */
+  private readonly fechaValueChanges = toSignal(
+    this.form.controls.fecha.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)),
+    { initialValue: this.form.controls.fecha.value }
+  );
+
+  /**
+   * Día de la semana derivado de la fecha del form (LUN..VIE o null si no
+   * aplica). Es el único día posible para la clase — el usuario no lo elige,
+   * se calcula automáticamente desde la fecha que introduce.
+   */
+  protected readonly diaCalculado = computed<Dia | null>(
+    () => abbrDeFechaString(this.fechaValueChanges() ?? "")
+  );
+
+  /**
+   * Convierte un día del mes (1–31) en string `YYYY-MM-DD` usando el mes/año
+   * actuales — sin pasar por `new Date(...)` para evitar corrimientos de TZ.
+   */
+  private fechaPorDiaDelMes(dia: number): string {
+    const hoy = new Date();
+    const y = hoy.getFullYear();
+    const m = String(hoy.getMonth() + 1).padStart(2, "0");
+    const d = String(dia).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  /** Genera el string YYYY-MM-DD del próximo día laborable (incluye hoy si es laboral). */
+  private proximoDiaLaborable(): string {
+    const hoy = new Date();
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + i);
+      const dow = d.getDay();
+      if (dow >= 1 && dow <= 5) return this.fechaPorDiaDelMes(d.getDate());
+    }
+    return this.fechaPorDiaDelMes(hoy.getDate());
+  }
+
   abrirCrear(): void {
     this.editando.set(null);
     this.errorMsg.set("");
-    // Por defecto: próximo día laborable en horario laboral.
-    const hoy = new Date();
-    const manana = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 1);
     this.form.reset({
       estudianteId: 0,
       cursoId: 0,
-      dia: "LUN",
-      fecha: manana,
+      fecha: this.proximoDiaLaborable(),
       horaInicio: "08:00",
       horaFin: "10:00",
     });
@@ -114,13 +169,10 @@ export class HorarioAdminComponent {
   abrirEditar(registro: HorarioRecord): void {
     this.editando.set(registro);
     this.errorMsg.set("");
-    const hoy = new Date();
-    const fecha = new Date(hoy.getFullYear(), hoy.getMonth(), registro.fecha);
     this.form.reset({
       estudianteId: registro.estudianteId,
       cursoId: registro.cursoId,
-      dia: registro.dia,
-      fecha,
+      fecha: this.fechaPorDiaDelMes(registro.fecha),
       horaInicio: registro.horaInicio,
       horaFin: registro.horaFin,
     });
@@ -138,8 +190,13 @@ export class HorarioAdminComponent {
     }
 
     const raw = this.form.getRawValue();
-    const fecha: Date = raw.fecha as Date;
-    const dia = raw.dia as Dia;
+    const fechaStr = raw.fecha as string;
+    const d = Number(fechaStr.split("-")[2]);
+    const dia = this.diaCalculado();
+    if (!dia) {
+      this.errorMsg.set("La fecha seleccionada no corresponde a un día laborable.");
+      return;
+    }
 
     // Validación de choque: mismo estudiante + mismo día + solapamiento de rango horario.
     const editandoId = this.editando()?.id;
@@ -161,7 +218,7 @@ export class HorarioAdminComponent {
       estudianteId: raw.estudianteId,
       cursoId: raw.cursoId,
       dia,
-      fecha: fecha.getDate(),
+      fecha: d,
       horaInicio: raw.horaInicio,
       horaFin: raw.horaFin,
     };

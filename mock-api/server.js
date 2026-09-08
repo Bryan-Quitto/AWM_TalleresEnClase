@@ -140,7 +140,9 @@ function validarHorario(payload) {
 server.post("/calificaciones", (req, res) => {
   const err = validarCalificacion(req.body);
   if (err) return res.status(400).json({ error: err });
-  res.status(201).json(router.db.get("calificaciones").insert(req.body).value().slice(-1)[0]);
+  const nuevo = { id: Date.now(), ...req.body };
+  router.db.get("calificaciones").push(nuevo).write();
+  res.status(201).json(nuevo);
 });
 
 server.put("/calificaciones/:id", (req, res) => {
@@ -156,7 +158,9 @@ server.put("/calificaciones/:id", (req, res) => {
 server.post("/horario", (req, res) => {
   const err = validarHorario(req.body);
   if (err) return res.status(400).json({ error: err });
-  res.status(201).json(router.db.get("horario").insert(req.body).value().slice(-1)[0]);
+  const nuevo = { id: Date.now(), ...req.body };
+  router.db.get("horario").push(nuevo).write();
+  res.status(201).json(nuevo);
 });
 
 server.put("/horario/:id", (req, res) => {

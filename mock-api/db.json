@@ -92,7 +92,7 @@
       "id": 3,
       "estudianteId": 1,
       "cursoId": 3,
-      "nota": 8.5
+      "nota": 4
     },
     {
       "id": 4,
@@ -167,7 +167,7 @@
       "estudianteId": 1,
       "cursoId": 5,
       "dia": "MIE",
-      "fecha": 26,
+      "fecha": 11,
       "horaInicio": "08:00",
       "horaFin": "11:00"
     },
@@ -184,8 +184,8 @@
       "id": 7,
       "estudianteId": 4,
       "cursoId": 1,
-      "dia": "LUN",
-      "fecha": 24,
+      "dia": "MAR",
+      "fecha": 22,
       "horaInicio": "08:00",
       "horaFin": "10:00"
     }
